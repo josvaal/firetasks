@@ -81,21 +81,21 @@ fun TaskCard(
             ) {
                 IconButton(onClick = {}) {
                     Icon(
-                        imageVector = Icons.Default.Done,
+                        painter = painterResource(id = R.drawable.ic_icon_done),
                         contentDescription = "Marcar como Terminado",
                         tint = color
                     )
                 }
                 IconButton(onClick = {}) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
+                        painter = painterResource(id = R.drawable.ic_icon_edit),
                         contentDescription = "Editar Tarea",
                         tint = color
                     )
                 }
                 IconButton(onClick = {}) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(id = R.drawable.ic_icon_delete),
                         contentDescription = "Eliminar Tarea",
                         tint = color
                     )

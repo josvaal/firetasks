@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -25,9 +26,11 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.josval.firetasks.R
 import com.josval.firetasks.viewmodel.AuthState
 import com.josval.firetasks.viewmodel.AuthViewModel
 
@@ -105,6 +108,12 @@ fun ProfilePage(
                     },
                     enabled = authState.value != AuthState.Loading
                 ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_icon_logout),
+                        contentDescription = "Cerrar Sesión",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(7.5.dp))
                     Text(text = "Cerrar Sesión")
                 }
             }
