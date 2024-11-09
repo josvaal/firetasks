@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675528495583",
+    "project_id": "firetasks-fa5d9",
+    "storage_bucket": "firetasks-fa5d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675528495583:android:dd4ef6fd0d3213085bf46a",
+        "android_client_info": {
+          "package_name": "com.josval.firetasks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1kWW7HupA6Gsdy4uN_ERdaWwiIMoSus8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
