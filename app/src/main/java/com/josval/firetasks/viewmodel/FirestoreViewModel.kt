@@ -1,9 +1,11 @@
 package com.josval.firetasks.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
@@ -22,13 +24,15 @@ class FirestoreViewModel : ViewModel() {
     private val _toastMessage = MutableLiveData<String?>()
     val toastMessage: LiveData<String?> = _toastMessage
 
+    private val tasksPath: CollectionReference = firestore.collection("tasks")
+
     fun tasksSnapshot(uid: String) {
         _firestoreState.value = FirestoreState.Loading
 
-        firestore.collection("tasks").whereEqualTo("createdBy", uid)
+        tasksPath.whereEqualTo("createdBy", uid)
             .addSnapshotListener { snapshot: QuerySnapshot?, error: FirebaseFirestoreException? ->
                 if (error != null) {
-                    _firestoreState.value = FirestoreState.Error(error.message ?: "Unknown error")
+                    _firestoreState.value = FirestoreState.Error(error.message ?: "Algo salió mal")
                     return@addSnapshotListener
                 }
                 snapshot?.let {
@@ -46,6 +50,13 @@ class FirestoreViewModel : ViewModel() {
                         } else {
                             null
                         }
+                    }.sortedBy { pair ->
+                        when (pair.second.priority) {
+                            Priority.HIGH -> 1
+                            Priority.MEDIUM -> 2
+                            Priority.LOW -> 3
+                            Priority.NONE -> 4
+                        }
                     }
                     _tasks.value = taskList
                     _firestoreState.value = FirestoreState.Fetched
@@ -55,27 +66,42 @@ class FirestoreViewModel : ViewModel() {
 
     fun createTask(task: TaskModel, uid: String) {
         _firestoreState.value = FirestoreState.Loading
-        firestore.collection("tasks").add(task)
+        tasksPath.add(task)
             .addOnSuccessListener {
                 _toastMessage.value = "¡Tarea creada exitosamente!"
                 _firestoreState.value = FirestoreState.Fetched
             }
             .addOnFailureListener { error ->
-                _firestoreState.value = FirestoreState.Error(error.message ?: "Algo salió mal")
                 _toastMessage.value = error.message ?: "Algo salió mal"
             }
     }
 
     fun deleteTask(id: String) {
-        firestore.collection("tasks").document(id).delete()
+        _firestoreState.value = FirestoreState.Loading
+        tasksPath.document(id).delete()
             .addOnSuccessListener {
                 _firestoreState.value = FirestoreState.Fetched
                 _toastMessage.value = "¡Tarea eliminada exitosamente!"
             }
             .addOnFailureListener { error ->
-                _firestoreState.value = FirestoreState.Error(error.message ?: "Algo salió mal")
                 _toastMessage.value = error.message ?: "Algo salió mal"
             }
+    }
+
+    fun updateTask(task: TaskModel, id: MutableState<String>) {
+        _firestoreState.value = FirestoreState.Loading
+        tasksPath.document(id.value).update(
+            mapOf(
+                "title" to task.title,
+                "body" to task.body,
+                "priority" to task.priority
+            )
+        ).addOnSuccessListener {
+            _firestoreState.value = FirestoreState.Fetched
+            _toastMessage.value = "¡Tarea actualizada exitosamente!"
+        }.addOnFailureListener { error ->
+            _toastMessage.value = error.message ?: "Algo salió mal"
+        }
     }
 
     fun clearToastMessage() {

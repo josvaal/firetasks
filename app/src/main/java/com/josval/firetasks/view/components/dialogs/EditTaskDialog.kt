@@ -1,4 +1,4 @@
-package com.josval.firetasks.view.components
+package com.josval.firetasks.view.components.dialogs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,31 +20,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.josval.firetasks.model.Priority
 import com.josval.firetasks.model.TaskModel
-import com.josval.firetasks.viewmodel.AuthViewModel
+import com.josval.firetasks.view.components.PriorityDropdown
 import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 @Composable
-fun NewTaskDialog(
+fun EditTaskDialog(
     openState: MutableState<Boolean>,
     firestoreViewModel: FirestoreViewModel,
-    authViewModel: AuthViewModel
+    task: MutableState<TaskModel>,
+    taskId: MutableState<String>,
 ) {
     var title by remember { mutableStateOf("") }
     val titleMaxLength = 40
+    title = task.value.title
     var body by remember { mutableStateOf("") }
     val bodyMaxLength = 100
+    body = task.value.body
     var selectedPriority by remember { mutableStateOf("Ninguno") }
-
-    val profile = authViewModel.profile()
-    val uid = profile?.uid ?: return
-
+    selectedPriority = when (task.value.priority.toString()) {
+        "HIGH" -> "Alto"
+        "MEDIUM" -> "Medio"
+        "LOW" -> "Bajo"
+        "NONE" -> "Ninguno"
+        else -> ""
+    }
     if (openState.value) {
         AlertDialog(
             onDismissRequest = {
                 openState.value = false
             },
             title = {
-                Text(text = "Nueva Tarea")
+                Text(text = "Editar Tarea")
             },
             text = {
                 Column {
@@ -93,7 +99,7 @@ fun NewTaskDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        firestoreViewModel.createTask(
+                        firestoreViewModel.updateTask(
                             TaskModel(
                                 title = title,
                                 body = body,
@@ -106,12 +112,16 @@ fun NewTaskDialog(
                                         else -> ""
                                     }
                                 ),
-                                createdBy = uid
-                            ), uid
+                                createdBy = ""
+                            ), taskId
                         )
+                        openState.value = false
+                        title = ""
+                        body = ""
+                        selectedPriority = "Ninguno"
                     }
                 ) {
-                    Text("Crear Tarea")
+                    Text("Actualizar Tarea")
                 }
             },
             dismissButton = {

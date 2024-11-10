@@ -70,7 +70,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.accompanist/accompanist-systemuicontroller
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
 
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

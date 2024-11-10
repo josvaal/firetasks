@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
                     val useDarkIcons = isSystemInDarkTheme()
                     systemUiController.setSystemBarsColor(
                         color = Color.Transparent,
-                        darkIcons = useDarkIcons
+                        darkIcons = useDarkIcons,
+                        isNavigationBarContrastEnforced = false
                     )
 
                     FiretasksNavigation(

@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,29 +16,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.josval.firetasks.R
+import com.josval.firetasks.model.Priority
+import com.josval.firetasks.model.TaskModel
 import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 @Composable
 fun TaskCard(
     modifier: Modifier = Modifier,
-    title: String,
-    body: String,
-    color: Color,
+    task: TaskModel,
     id: String,
     firestoreViewModel: FirestoreViewModel,
+    editState: MutableState<Boolean>,
+    mutableTask: MutableState<TaskModel>,
+    mutableTaskId: MutableState<String>,
+    deleteState: MutableState<Boolean>
 ) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        border = BorderStroke(2.dp, color),
+        border = BorderStroke(2.dp, task.priority.color),
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
@@ -57,21 +57,21 @@ fun TaskCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = title,
+                    text = task.title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.ic_icon_book),
                     contentDescription = "Ícono de tarea",
-                    tint = color
+                    tint = task.priority.color
                 )
             }
 
             Spacer(modifier = Modifier.height(2.dp))
 
             Text(
-                text = body,
+                text = task.body,
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -82,27 +82,30 @@ fun TaskCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    deleteState.value = true
+                    mutableTaskId.value = id
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_icon_done),
                         contentDescription = "Marcar como Terminado",
-                        tint = color
-                    )
-                }
-                IconButton(onClick = {}) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_icon_edit),
-                        contentDescription = "Editar Tarea",
-                        tint = color
+                        tint = task.priority.color
                     )
                 }
                 IconButton(onClick = {
-                    firestoreViewModel.deleteTask(id)
+                    editState.value = true
+                    mutableTask.value = TaskModel(
+                        title = task.title,
+                        body = task.body,
+                        priority = Priority.fromString(task.priority.toString()),
+                        createdBy = task.createdBy
+                    )
+                    mutableTaskId.value = id
                 }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_icon_delete),
-                        contentDescription = "Eliminar Tarea",
-                        tint = color
+                        painter = painterResource(id = R.drawable.ic_icon_edit),
+                        contentDescription = "Editar Tarea",
+                        tint = task.priority.color
                     )
                 }
             }
