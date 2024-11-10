@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.josval.firetasks.ui.theme.FireTasksTheme
 import com.josval.firetasks.viewmodel.AuthViewModel
-import com.josval.firetasks.viewmodel.TaskViewModel
+import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val authViewModel: AuthViewModel by viewModels()
-        val taskViewModel: TaskViewModel by viewModels()
+        val firestoreViewModel: FirestoreViewModel by viewModels()
 
         setContent {
             FireTasksTheme {
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     FiretasksNavigation(
                         modifier = Modifier.padding(innerPadding),
                         authViewModel = authViewModel,
-                        taskViewModel = taskViewModel
+                        firestoreViewModel = firestoreViewModel
                     )
                 }
             }

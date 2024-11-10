@@ -14,13 +14,13 @@ import com.josval.firetasks.view.pages.ProfilePage
 import com.josval.firetasks.view.pages.SignupPage
 import com.josval.firetasks.viewmodel.AuthState
 import com.josval.firetasks.viewmodel.AuthViewModel
-import com.josval.firetasks.viewmodel.TaskViewModel
+import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 @Composable
 fun FiretasksNavigation(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel,
-    taskViewModel: TaskViewModel
+    firestoreViewModel: FirestoreViewModel
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.authState.observeAsState()
@@ -51,7 +51,7 @@ fun FiretasksNavigation(
             SignupPage(modifier, navController, authViewModel)
         }
         composable("home") {
-            HomePage(modifier, navController, authViewModel, taskViewModel)
+            HomePage(modifier, navController, authViewModel, firestoreViewModel)
         }
         composable("profile") {
             ProfilePage(modifier, navController, authViewModel)

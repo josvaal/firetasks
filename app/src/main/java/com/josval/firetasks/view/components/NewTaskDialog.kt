@@ -18,16 +18,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.josval.firetasks.model.Priority
+import com.josval.firetasks.model.TaskModel
+import com.josval.firetasks.viewmodel.AuthViewModel
+import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 @Composable
 fun NewTaskDialog(
-    openState: MutableState<Boolean>
+    openState: MutableState<Boolean>,
+    firestoreViewModel: FirestoreViewModel,
+    authViewModel: AuthViewModel
 ) {
     var title by remember { mutableStateOf("") }
     val titleMaxLength = 40
     var body by remember { mutableStateOf("") }
     val bodyMaxLength = 100
     var selectedPriority by remember { mutableStateOf("Ninguno") }
+
+    val profile = authViewModel.profile()
+    val uid = profile?.uid ?: return
 
     if (openState.value) {
         AlertDialog(
@@ -84,7 +93,22 @@ fun NewTaskDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        openState.value = false
+                        firestoreViewModel.createTask(
+                            TaskModel(
+                                title = title,
+                                body = body,
+                                priority = Priority.fromString(
+                                    when (selectedPriority) {
+                                        "Alto" -> "HIGH"
+                                        "Medio" -> "MEDIUM"
+                                        "Bajo" -> "LOW"
+                                        "Ninguno" -> "NONE"
+                                        else -> ""
+                                    }
+                                ),
+                                createdBy = uid
+                            ), uid
+                        )
                     }
                 ) {
                     Text("Crear Tarea")

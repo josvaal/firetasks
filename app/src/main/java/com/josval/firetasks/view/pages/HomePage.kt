@@ -1,7 +1,6 @@
 package com.josval.firetasks.view.pages
 
 import android.widget.Toast
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +20,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -38,13 +35,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.josval.firetasks.R
 import com.josval.firetasks.view.components.NewTaskDialog
 import com.josval.firetasks.viewmodel.AuthState
 import com.josval.firetasks.viewmodel.AuthViewModel
 import com.josval.firetasks.viewmodel.FirestoreState
-import com.josval.firetasks.viewmodel.TaskViewModel
+import com.josval.firetasks.viewmodel.FirestoreViewModel
 import com.josval.firetasks.view.components.TaskCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,14 +49,20 @@ fun HomePage(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel,
-    taskViewModel: TaskViewModel
+    firestoreViewModel: FirestoreViewModel
 ) {
     val openNewTaskDialog = remember { mutableStateOf(false) }
+
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
-    val profile = authViewModel.profile()
 
+    val profile = authViewModel.profile()
     val uid = profile?.uid ?: return
+
+    val firestoreState = firestoreViewModel.firestoreState.observeAsState()
+    val tasks = firestoreViewModel.tasks.observeAsState(emptyList()).value
+
+    val toastMessage = firestoreViewModel.toastMessage.observeAsState()
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -68,6 +70,11 @@ fun HomePage(
                 navController.popBackStack()
                 navController.navigate("login")
             }
+
+            is AuthState.Authenticated -> {
+                firestoreViewModel.tasksSnapshot(uid)
+            }
+
             is AuthState.Error -> Toast.makeText(
                 context,
                 (authState.value as AuthState.Error).message,
@@ -76,16 +83,14 @@ fun HomePage(
 
             else -> Unit
         }
-        if (authState.value is AuthState.Authenticated) {
-            taskViewModel.tasksSnapshot(uid)
-        }
     }
 
-    val firestoreState by taskViewModel.firestoreState.observeAsState(FirestoreState.Loading)
-    val tasks by taskViewModel.tasks.observeAsState(emptyList())
-
-
-
+    LaunchedEffect(toastMessage.value) {
+        toastMessage.value?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            firestoreViewModel.clearToastMessage()
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -136,7 +141,7 @@ fun HomePage(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    when (firestoreState) {
+                    when (firestoreState.value) {
                         is FirestoreState.Loading -> {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -147,7 +152,8 @@ fun HomePage(
                         }
 
                         is FirestoreState.Error -> {
-                            val errorMessage = (firestoreState as FirestoreState.Error).message
+                            val errorMessage =
+                                (firestoreState.value as FirestoreState.Error).message
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center
@@ -162,15 +168,27 @@ fun HomePage(
 
                         is FirestoreState.Fetched -> {
                             Column(modifier = Modifier.fillMaxSize()) {
-                                tasks.forEach { task ->
+                                tasks.forEach { (id, task) ->
                                     TaskCard(
-                                        title = task.title!!,
-                                        body = task.body!!,
-                                        color = task.priority.color
+                                        id = id,
+                                        title = task.title,
+                                        body = task.body,
+                                        color = task.priority.color,
+                                        firestoreViewModel = firestoreViewModel
                                     )
                                 }
                             }
                         }
+
+                        is FirestoreState.Success -> {
+                            Toast.makeText(
+                                context,
+                                (firestoreState.value as FirestoreState.Error).message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        else -> {}
                     }
                 }
             }
@@ -179,6 +197,8 @@ fun HomePage(
 
 
     NewTaskDialog(
-        openState = openNewTaskDialog
+        openState = openNewTaskDialog,
+        firestoreViewModel = firestoreViewModel,
+        authViewModel = authViewModel
     )
 }

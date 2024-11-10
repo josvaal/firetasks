@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.josval.firetasks.R
+import com.josval.firetasks.viewmodel.FirestoreViewModel
 
 @Composable
 fun TaskCard(
@@ -34,6 +35,8 @@ fun TaskCard(
     title: String,
     body: String,
     color: Color,
+    id: String,
+    firestoreViewModel: FirestoreViewModel,
 ) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
@@ -93,7 +96,9 @@ fun TaskCard(
                         tint = color
                     )
                 }
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    firestoreViewModel.deleteTask(id)
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_icon_delete),
                         contentDescription = "Eliminar Tarea",
